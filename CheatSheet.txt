@@ -1,0 +1,94 @@
+From The Rust Programming Language 3rd Ed 2024.pdf:
+
+.toml files use # to instantiate a comment to the end of line
+
+A workspace is a folder with a Cargo.toml with:
+[workspace]
+version = "0.1.0" # Old way
+edition = "2024"
+resolver = "3" # Sets the resolver required to version 3
+members = [
+
+]
+# New way:
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+The workspace has one target directory at the top level that the compiled artifacts will be placed into.
+
+Packages are added to the workspace by (in the workspace):
+$ cargo new <package name> -> creates a binary package
+or
+$ cargo new <package name> --lib -> creates a library package
+which will update members with the package name as a key.
+
+The terms "library package" and "binary package" are really just shorthand for what Cargo generated initially. A package can evolve beyond that.
+
+A package is a bundle of one or more crates that provides a set of functionality.
+A package contains a Cargo.toml file that describes how to build those crates.
+A package can contain as many binary crates as you like, but at most only one library crate.
+A package must contain at least one crate, whether that’s a library or binary crate.
+
+A crate is the smallest amount of code that the Rust compiler considers at a time.
+Even if you run rustc rather than cargo and pass a single source code file,
+the compiler considers that file to be a crate.
+
+Crates can contain modules, and the modules may be defined in other files that get compiled with the crate.
+A package may contain:
+    one library crate (src/lib.rs)
+    zero or more binary crates (src/main.rs, src/bin/*.rs)
+
+In Rust, simply creating a .rs file is not enough. Cargo only compiles modules that are reachable from your crate root (lib.rs or main.rs).
+File structure is tied to modules, Rust treats files as module definitions.
+
+A module never spans crates.
+A crate owns exactly one module tree.
+Files are just ways of implementing nodes in that tree.
+
+Dependencies:
+Cargo.toml for a package can contain:
+[dependencies]
+<package> = { path = "../<package>" }
+cargo build will pick up the crates of the described packages to build production code
+
+And/or:
+[dev-dependencies]
+<package> = { path = "../<package>" }
+cargo build will pick up the crates of the described packages to build:
+unit tests, integration tests, examples, benchmarks
+
+but not for normal builds.
+These dependency resolutions are not needed within a package, only between packages!
+
+Building:
+cargo build -> builds for the machine you're currently running on.
+cargo build --release -> 
+
+The target can be specified like: 
+x86_64-unknown-linux-gnu: X86 Linux,
+arm-unknown-linux-gnueabihf: ARM 32,
+x86_64-pc-windows-msvc: windows.
+cargo build --target <the target arch>
+
+Installed targets can be queried with:
+$ rustup target list --installed
+
+Testing:
+At its simplest, a test in Rust is a function that’s annotated with the test attribute. Attributes are metadata about pieces of Rust code.
+To change a function into a test function, add #[test] on the line before fn.
+
+The convention is to create a module named tests in each file to contain the test functions and to annotate the module with cfg(test).
+the attribute cfg stands
+for configuration and tells Rust that the following item should only be included given a certain configuration option (test).
+
+This within a source file:
+#[cfg(test)] // means: "Only include this code when building test targets."
+mod tests {
+    ...
+}
+
+Linting:
+Lint precedence is generally: allow < warn < deny < forbid
+#![allow(...)] // applies to the enclosed scope
+#[allow(...)] // applies to the next item

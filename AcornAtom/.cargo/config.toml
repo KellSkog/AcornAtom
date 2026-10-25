@@ -1,0 +1,9 @@
+[target.arm-unknown-linux-gnueabihf]
+linker = "clang-22"
+
+rustflags = [
+    "-C", "target-cpu=arm1176jzf-s",
+    "-C", "link-arg=--target=arm-linux-gnueabihf",
+    "-C", "link-arg=--sysroot=/home/kellskog/rpi1-sysroot",
+    "-C", "link-arg=-fuse-ld=lld",
+]

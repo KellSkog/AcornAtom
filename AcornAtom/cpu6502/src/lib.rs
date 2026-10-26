@@ -53,9 +53,9 @@ Indirect Absolute (Jump)    5,   3
     fn BITABS() {}
     fn ANDabs() {}
     fn ROLabs() {}
+    fn LDXimm() {}
     fn ILLEGAL() {}
     /*fn () {}
-    fn () {}
     fn () {}
     fn () {}
     fn () {}
@@ -64,11 +64,11 @@ Indirect Absolute (Jump)    5,   3
 // }
 #[warn(non_snake_case)]
 
-static OP_CODE: [fn(); 29] = [ // Dense array of function pointers
+static OP_CODE: [fn(); 30] = [ // Dense array of function pointers
 BRK, ORAindX, ORAzpg, ASLzpg, PHP, ORAimm, ASLA, ORAabs,
 ASLabs, BPLrel, ORAindY, ORAzpgX, ASLzpgX, CLC, ORAabsY, ORAabsX, 
 ASLabsX, JSRabs, ANDindX, BITzpg, ANDzpg, ROLzpg, PLP, ANDimm,
-ROLA, BITABS, ANDabs, ROLabs,
+ROLA, BITABS, ANDabs, ROLabs, LDXimm,
 ILLEGAL];
 static OP_COUNT: usize = OP_CODE.len() - 1; // Points to ILLEGAL
 static INDEX: [usize; 0x100] = [ // 256 byte sparse array pointing to INDEX of function pointer for op code
@@ -82,7 +82,7 @@ static INDEX: [usize; 0x100] = [ // 256 byte sparse array pointing to INDEX of f
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 70 - 7F
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 80 - 8F
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 90 - 9F
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // A0 - AF
+0, 1, 29, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // A0 - AF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // B0 - BF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // C0 - CF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // D0 - DF

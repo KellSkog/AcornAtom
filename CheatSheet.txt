@@ -92,3 +92,9 @@ Linting:
 Lint precedence is generally: allow < warn < deny < forbid
 #![allow(...)] // applies to the enclosed scope
 #[allow(...)] // applies to the next item
+
+Functions:
+You can return early from a function by using the return keyword and specifying a value, but most
+functions return the last expression implicitly.
+The last expression in a function is the value returned (no return keyword needed)
+Important: this expression most NOT end with a ';' which would turn it into a statement!!!

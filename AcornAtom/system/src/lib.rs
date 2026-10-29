@@ -1,7 +1,6 @@
 const BASIC_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xC000
-// const Fp_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xD000
+const Fp_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
 const COS_ROM: &[u8; 4096] = include_bytes!("../Atom_Kernel.rom"); // 0xF000
-// static ram: [u8; 65536] = [0; 65536];
 
 struct Ram {
     ram: [u8; 0x10000]
@@ -28,12 +27,18 @@ impl Vdg6847 {
 }
 
 pub struct Bus {
+    // const BASIC_ROM: &[u8; 4096],
+    // const Fp_ROM: &[u8; 4096],
+    // const COS_ROM: &[u8; 4096],
     ram: Ram,
     vdg: Vdg6847,
 }
 impl Bus {
     pub fn new() -> Self {
         Self {
+            // BASIC_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xC000
+            // Fp_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
+            // COS_ROM: &[u8; 4096] = include_bytes!("../Atom_Kernel.rom"); // 0xF000
             ram: Ram {
                 ram: [0; 0x10000],
             },

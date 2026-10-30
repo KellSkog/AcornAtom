@@ -52,6 +52,7 @@ impl Bus {
             0x0800..0x0900 => self.vdg.read(adr - 0x0800),
 
             0xC000..0xD000 => BASIC_ROM[adr - 0xC000],
+            0xC000..0xD000 => Fp_ROM[adr - 0xD000],
             0xF000..0x10000 => COS_ROM[adr - 0xF000],
             _ => self.ram.read(adr),
         }

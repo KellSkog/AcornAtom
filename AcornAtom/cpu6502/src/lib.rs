@@ -35,13 +35,13 @@ subtract operation.
 Bit 7 – Negative flag (N). Set if bit 7 of the result of an
 operation is set; otherwise cleared.
 */
-const FLAG_C: u8 = 0x01;
-const FLAG_Z: u8 = 0x02;
-const FLAG_I: u8 = 0x04;
-const FLAG_D: u8 = 0x08;
-const FLAG_B: u8 = 0x10;
-const FLAG_V: u8 = 0x40;
-const FLAG_N: u8 = 0x80;
+const FLAG_C: u8 = 0x01 << 0;
+const FLAG_Z: u8 = 0x01 << 1;
+const FLAG_I: u8 = 0x01 << 2;
+const FLAG_D: u8 = 0x01 << 3;
+const FLAG_B: u8 = 0x01 << 4;
+const FLAG_V: u8 = 0x01 << 6;
+const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulting value in all data movement and data arithmetic.
 
 // {
     // #![allow(non_snake_case)] // error: an inner attribute is not permitted in this context
@@ -73,8 +73,33 @@ const FLAG_N: u8 = 0x80;
     fn BITABS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ANDabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ROLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn ILLEGAL<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xA2
+        cpu.x = bus.read((cpu.pc +1) as usize);
+        cpu.pc += 2;
+        if cpu.x == 0 {
+        cpu.flags |= FLAG_Z;
+        }
+
+        if cpu.x & 0x80 != 0 {
+            cpu.flags |= FLAG_N;
+        }
+    }
+    fn LDAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xBD
+        let addrl: usize = bus.read((cpu.pc + 1)  as usize) as usize;
+        let addrh: usize = (bus.read((cpu.pc + 2) as usize) as usize) << 8;
+        let addr: usize = addrh + addrl + (cpu.x  as usize);
+        cpu.a = bus.read(addr);
+        if cpu.a == 0 {
+        cpu.flags |= FLAG_Z;
+        }
+
+        if cpu.a & 0x80 != 0 {
+            cpu.flags |= FLAG_N;
+        }
+    }
+    fn ILLEGAL<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+        panic!("Illegal opcode");
+    }
     /*fn () {}
     fn () {}
     fn () {}
@@ -84,11 +109,11 @@ const FLAG_N: u8 = 0x80;
 // }
 #[warn(non_snake_case)]
 
-static OP_CODE: [for<'a>fn(bus: &'a mut system::Bus, cpu: &'a mut Cpu); 30] = [ // Dense array of function pointers
+static OP_CODE: [for<'a>fn(bus: &'a mut system::Bus, cpu: &'a mut Cpu); 31] = [ // Dense array of function pointers
 BRK, ORAindX, ORAzpg, ASLzpg, PHP, ORAimm, ASLA, ORAabs,
 ASLabs, BPLrel, ORAindY, ORAzpgX, ASLzpgX, CLC, ORAabsY, ORAabsX, 
 ASLabsX, JSRabs, ANDindX, BITzpg, ANDzpg, ROLzpg, PLP, ANDimm,
-ROLA, BITABS, ANDabs, ROLabs, LDXimm,
+ROLA, BITABS, ANDabs, ROLabs, LDXimm, LDAabsX,
 ILLEGAL];
 static OP_COUNT: usize = OP_CODE.len() - 1; // Points to ILLEGAL
 static INDEX: [usize; 0x100] = [ // 256 byte sparse array pointing to INDEX of function pointer for op code
@@ -102,24 +127,21 @@ static INDEX: [usize; 0x100] = [ // 256 byte sparse array pointing to INDEX of f
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 70 - 7F
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 80 - 8F
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // 90 - 9F
-0, 1, 29, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // A0 - AF
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // B0 - BF
+0, 1, 28, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // A0 - AF
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 29, 0xe, 0xf,  // B0 - BF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // C0 - CF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // D0 - DF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // E0 - EF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // F0 - FF
 ];
-// pub fn decode(op: u8)  {
-//         OP_CODE[INDEX[op as usize]]();
-//     }
 
 pub struct Cpu {
-    a: u8,
-    x: u8,
-    y: u8,
-    sp: u8,
-    pc: u16,
-    flags: u8, // Negative, Zero, Carry, Interupt disable, Decimal, oVerflow
+    pub a: u8,
+    pub x: u8,
+    pub y: u8,
+    pub sp: u8,
+    pub pc: u16,
+    pub flags: u8, // Negative, Zero, Carry, Interupt disable, Decimal, oVerflow
     // bus: &'a mut system::Bus, // A Cpu contains a mutable reference to a Bus, and that reference lives for lifetime 'a.
 }
 impl Cpu {
@@ -161,9 +183,26 @@ mod tests {
         let mut bus = system::Bus::new();
         let mut cpu = Cpu::new();
         assert_eq!(bus.read(cpu.pc as usize), 0xA2);
-        decode(&mut bus, &mut cpu);
-        assert_eq!(cpu.pc, 0xFF3F)
-        // assert_eq!(OP_CODE[INDEX[0x1E]] as usize,
-        // ASLabsX as *const () as usize);
+        decode(&mut bus, &mut cpu); // LDX @0x17
+        assert_eq!(cpu.pc, 0xFF41);
+        assert_eq!(bus.read(cpu.pc as usize), 0xBD);
+        assert_eq!(cpu.x, 0x17);
+
+        let addrl: usize = bus.read((cpu.pc + 1)  as usize) as usize;
+        let addrh: usize = (bus.read((cpu.pc + 2) as usize) as usize) << 8;
+        let addr: usize = addrh + addrl + (cpu.x  as usize);
+
+        assert_eq!(addr, 0xff9a + 0x17); 
+        decode(&mut bus, &mut cpu); // LDA 0xff9a, X
+        assert_eq!(cpu.a, 0xC2); // (0xff9a + 0x17) = 0xC2
+
+    }
+    #[test]
+    fn arithmetics() {
+        let a: u8 = 1;
+        let b: u8 = 16;
+        let c: u8 = 1;
+        let res: usize = ((a as usize) << 8) + b as usize + c as usize;
+        assert_eq!(res, 0x111);
     }
 }

@@ -1,5 +1,5 @@
 const BASIC_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xC000
-const Fp_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
+const FP_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
 const COS_ROM: &[u8; 4096] = include_bytes!("../Atom_Kernel.rom"); // 0xF000
 
 struct Ram {
@@ -28,7 +28,7 @@ impl Vdg6847 {
 
 pub struct Bus {
     // const BASIC_ROM: &[u8; 4096],
-    // const Fp_ROM: &[u8; 4096],
+    // const FP_ROM: &[u8; 4096],
     // const COS_ROM: &[u8; 4096],
     ram: Ram,
     vdg: Vdg6847,
@@ -36,9 +36,6 @@ pub struct Bus {
 impl Bus {
     pub fn new() -> Self {
         Self {
-            // BASIC_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xC000
-            // Fp_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
-            // COS_ROM: &[u8; 4096] = include_bytes!("../Atom_Kernel.rom"); // 0xF000
             ram: Ram {
                 ram: [0; 0x10000],
             },
@@ -52,7 +49,7 @@ impl Bus {
             0x0800..0x0900 => self.vdg.read(adr - 0x0800),
 
             0xC000..0xD000 => BASIC_ROM[adr - 0xC000],
-            0xC000..0xD000 => Fp_ROM[adr - 0xD000],
+            0xD000..0xE000 => FP_ROM[adr - 0xD000],
             0xF000..0x10000 => COS_ROM[adr - 0xF000],
             _ => self.ram.read(adr),
         }

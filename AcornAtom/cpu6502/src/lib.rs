@@ -45,7 +45,7 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
 
 // {
     // #![allow(non_snake_case)] // error: an inner attribute is not permitted in this context
-    fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 00 */{}
     fn ORAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ORAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -54,7 +54,8 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn ASLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ORAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 10 */{}
     fn ORAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ORAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -62,7 +63,8 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn ORAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ORAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn JSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn JSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 20 */{}
     fn ANDindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn BITzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ANDzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -73,17 +75,107 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn BITABS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ANDabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ROLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xA2
+
+    fn BMIrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 30 */{}
+    fn ANDindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ANDzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ROLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SEC<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ANDabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ANDabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ROLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn RTI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 40 */{}
+    fn EORindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LSRzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn PHA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LSRA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn JMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BVCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 50 */ {}
+    fn EORindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LSRzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CLI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn EORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LSRabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn RTS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 60 */ {}
+    fn ADCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn RORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn PLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn RORA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn JMPind<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn RORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BVSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 70 */ {}
+    fn ADCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn RORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SEI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn ADCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn RORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn STAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 81 */ {}
+    fn STYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DEY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TXA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BCCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 90 */ {}
+    fn STAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TYA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TXS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn STAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn LDYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* A0 */ {}
+    fn LDAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
         cpu.x = bus.read((cpu.pc +1) as usize);
         cpu.pc += 2;
         if cpu.x == 0 {
         cpu.flags |= FLAG_Z;
         }
-
         if cpu.x & 0x80 != 0 {
             cpu.flags |= FLAG_N;
         }
     }
+    fn LDYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TAY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDAimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TAX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BCSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* B0 */ {}
+    fn LDAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CLV<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn TSX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn LDYabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn LDAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xBD
         let addrl: usize = bus.read((cpu.pc + 1)  as usize) as usize;
         let addrh: usize = (bus.read((cpu.pc + 2) as usize) as usize) << 8;
@@ -97,18 +189,57 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
             cpu.flags |= FLAG_N;
         }
     }
+    fn LDXabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {}
+    fn CMPindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CPYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DECzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DEX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DECabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BNErel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* D0 */ {}
+    fn CMPindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DECzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CLD<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CMPabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DECabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn CPXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* E0 */ {}
+    fn SBCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CPXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn NOP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn CPXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
+    fn BEQrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* F0 */ {}
+    fn SBCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SED<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn SBCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn INCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+
     fn ILLEGAL<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
         panic!("Illegal opcode");
     }
-    /*fn () {}
-    fn () {}
-    fn () {}
-    fn () {}
-    fn () {}
-    fn () {}*/
 // }
 #[warn(non_snake_case)]
 
+/* Todo: Remove this fossil will double indirection to save memory (Cycles more critical than memory)
 static OP_CODE: [for<'a>fn(bus: &'a mut system::Bus, cpu: &'a mut Cpu); 31] = [ // Dense array of function pointers
 BRK, ORAindX, ORAzpg, ASLzpg, PHP, ORAimm, ASLA, ORAabs,
 ASLabs, BPLrel, ORAindY, ORAzpgX, ASLzpgX, CLC, ORAabsY, ORAabsX, 
@@ -133,6 +264,25 @@ static INDEX: [usize; 0x100] = [ // 256 byte sparse array pointing to INDEX of f
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // D0 - DF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // E0 - EF
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,  // F0 - FF
+]; */
+
+static OP_CODE: [for<'a>fn(bus: &'a mut system::Bus, cpu: &'a mut Cpu); 0x100] = [ 
+BRK, ORAindX, ILLEGAL, ILLEGAL, ILLEGAL, ORAzpg, ASLzpg, ILLEGAL, PHP, ORAimm, ASLA, ILLEGAL, ILLEGAL, ORAabs, ASLabs, ILLEGAL, // 00 - 0F
+BPLrel, ORAindY, ILLEGAL, ILLEGAL, ILLEGAL, ORAzpgX, ASLzpgX, ILLEGAL, CLC, ORAabsY, ILLEGAL, ILLEGAL, ILLEGAL, ORAabsX, ASLabsX, ILLEGAL, // 10 - 1F
+JSRabs, ANDindX, ILLEGAL, ILLEGAL, BITzpg, ANDzpg, ROLzpg, ILLEGAL, PLP, ANDimm, ROLA, ILLEGAL, BITABS, ANDabs, ROLabs, ILLEGAL, // 20 - 2F
+BMIrel, ANDindY, ILLEGAL, ILLEGAL, ILLEGAL, ANDzpgX, ROLzpgX, ILLEGAL, SEC, ANDabsY, ILLEGAL, ILLEGAL, ILLEGAL, ANDabsX, ROLabsX, ILLEGAL,  // 30 - 3F
+RTI, EORindX, ILLEGAL, ILLEGAL, ILLEGAL, EORzpg, LSRzpg, ILLEGAL, PHA, EORimm, LSRA, ILLEGAL, JMPabs, EORabs, LSRabs, ILLEGAL, // 40 - 4F
+BVCrel, EORindY, ILLEGAL, ILLEGAL, ILLEGAL, EORzpgX, LSRzpgX, ILLEGAL, CLI, EORabsY, ILLEGAL, ILLEGAL, ILLEGAL, EORabsX, LSRabsX,  ILLEGAL, // 50 - 5F
+RTS, ADCindX, ILLEGAL, ILLEGAL, ILLEGAL, ADCzpg, RORzpg, ILLEGAL, PLA, ADCimm, RORA, ILLEGAL, JMPind, ADCabs, RORabs, ILLEGAL, // 60 -6F
+BVSrel, ADCindY, ILLEGAL, ILLEGAL, ILLEGAL, ADCzpgX, RORzpgX, ILLEGAL, SEI, ADCabsY, ILLEGAL, ILLEGAL, ILLEGAL, ADCabsX, RORabsX,  ILLEGAL, // 70 - 7F
+ILLEGAL, STAindX, ILLEGAL, ILLEGAL, STYzpg, STAzpg, STXzpg, ILLEGAL, DEY, ILLEGAL, TXA, ILLEGAL, STYabs, STAabs, STXabs,  ILLEGAL, // 80 -8F
+BCCrel, STAindY, ILLEGAL, ILLEGAL, STYzpgX, STAzpgX, STXzpgY, ILLEGAL, TYA, STAabsY, TXS, ILLEGAL, ILLEGAL, STAabsX, ILLEGAL, ILLEGAL, // 90 -9F
+LDYimm, LDAindX, LDXimm, ILLEGAL, LDYzpg, LDAzpg, LDXzpg, ILLEGAL, TAY, LDAimm, TAX, ILLEGAL, LDYabs, LDAabs, LDXabs, ILLEGAL, // A0 -AF
+BCSrel, LDAindY, ILLEGAL, ILLEGAL, LDYzpgX, LDAzpgX, LDXzpgY, ILLEGAL, CLV, LDAabsY, TSX, ILLEGAL, LDYabsX, LDAabsX, LDXabsY, ILLEGAL, // B0 - BF
+CPYimm, CMPindX, ILLEGAL, ILLEGAL, CPYzpg, CMPzpg, DECzpg, ILLEGAL, INY, CMPimm, DEX, ILLEGAL, CPYabs, CMPabs, DECabs, ILLEGAL, // C0 - CF
+BNErel, CMPindY, ILLEGAL, ILLEGAL, ILLEGAL, CMPzpgX, DECzpgX, ILLEGAL, CLD, CMPabsY, ILLEGAL, ILLEGAL, ILLEGAL, CMPabsX, DECabsX, ILLEGAL, // D0 -DF
+CPXimm, SBCindX, ILLEGAL, ILLEGAL, CPXzpg, SBCzpg, INCzpg, ILLEGAL, INX, SBCimm, NOP, ILLEGAL, CPXabs, SBCabs, INCabs, ILLEGAL, // E0- EF
+BEQrel, SBCindY, ILLEGAL, ILLEGAL, ILLEGAL, SBCzpgX, INCzpgX, ILLEGAL, SED, SBCabsY, ILLEGAL, ILLEGAL, ILLEGAL, SBCabsX, INCabsX, ILLEGAL, // F0 -FF
 ];
 
 pub struct Cpu {
@@ -170,7 +320,8 @@ impl Cpu {
 
 pub fn decode<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { //}, opcode: u8) {
     let opcode = bus.read(cpu.pc as usize);
-    OP_CODE[INDEX[opcode as usize]](bus, cpu);
+    // OP_CODE[INDEX[opcode as usize]](bus, cpu);
+    OP_CODE[opcode as usize](bus, cpu);
 }
     
 // Unit tests - Has access to private members!

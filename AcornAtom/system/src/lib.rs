@@ -27,9 +27,6 @@ impl Vdg6847 {
 }
 
 pub struct Bus {
-    // const BASIC_ROM: &[u8; 4096],
-    // const FP_ROM: &[u8; 4096],
-    // const COS_ROM: &[u8; 4096],
     ram: Ram,
     vdg: Vdg6847,
 }
@@ -54,20 +51,20 @@ impl Bus {
             _ => self.ram.read(adr),
         }
     }
-    pub fn write(&mut self, adr: u16, data: u8) {
+    pub fn write(&mut self, adr: usize, data: u8) {
         match adr {
             0x0800..0x0900 => {
-                self.vdg.write((adr - 0x0800) as usize, data)
+                self.vdg.write(adr - 0x0800, data)
             }
-            _ => self.ram.write(adr as usize, data),
+            _ => self.ram.write(adr, data),
         }
     }
 }
 
-// static ppi8255 = Ppi8255 {
+// static ppu8255 = Ppu8255 {
 //     reg: [u8;0xFF]
 // };
-// impl Ppi8255 {
+// impl Ppu8255 {
 //     pub fn read(&self, index: usize) -> u8 {
 //         return self.reg[index];
 //     }
@@ -75,7 +72,7 @@ impl Bus {
 //         self.reg[index] = data;
 //     }
 // }
-// // static ppi8255 = Ppi8255;
+// // static ppu8255 = Ppu8255;
 
 // static Via6522 = Via6522 {
 //     reg: [u8;0xFF]
@@ -97,7 +94,7 @@ impl Bus {
 //         0x0800..0x0900 => bus.vdg6847.read(adr),
 //         0x2800..0x3C00 => bus.ram.read(adr), // Ram expansion
 //         0x8000..0x9800 => bus.ram.read(adr), // Graphics RAM
-//         // 0xB000..0xB800 => ppi8255.read(adr),
+//         // 0xB000..0xB800 => ppu8255.read(adr),
 //         // 0xB800..0xC000 => via6522.read(adr),
 //         0xC000..0xD000 => BASIC_ROM[adr - 0xC000],
 //         0xF000..0x10000 => COS_ROM[adr - 0xF000],
@@ -112,7 +109,7 @@ impl Bus {
 //         0x0800..0x0900 => vdg6847.write(adr, data),
 //         0x2800..0x3C00 => ram.write(adr, data), // Ram expansion
 //         0x8000..0x9800 => ram.write(adr, data), // Graphics RAM
-//         // 0xB000..0xB800 => ppi8255.write(adr, data),
+//         // 0xB000..0xB800 => ppu8255.write(adr, data),
 //         // 0xB800..0xC000 => via6522.write(adr, data),
 //         _ => {},
 //     }

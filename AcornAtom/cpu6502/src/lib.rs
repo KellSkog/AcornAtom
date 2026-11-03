@@ -35,15 +35,25 @@ subtract operation.
 Bit 7 – Negative flag (N). Set if bit 7 of the result of an
 operation is set; otherwise cleared.
 */
-const FLAG_C: u8 = 0x01 << 0;
-const FLAG_Z: u8 = 0x01 << 1;
-const FLAG_I: u8 = 0x01 << 2;
-const FLAG_D: u8 = 0x01 << 3;
-const FLAG_B: u8 = 0x01 << 4;
+const FLAG_C: u8 = 0x01 << 0; // Operations which affect the carry are ADC, ASL, CLC, CMP, CPX, CPY, LSR, PLP, ROL, :RTT, SBC, sfc.
+const FLAG_Z: u8 = 0x01 << 1; // set when the 8 bits of results of an opera­tion are 0.
+const FLAG_I: u8 = 0x01 << 2; // Instructions which affect the interrupt disable are BRK, CLI, PLP, RTI and SEI.
+const FLAG_D: u8 = 0x01 << 3; // affects the decimal mode flag: CLD, PLP, RTI and SED.
+const FLAG_B: u8 = 0x01 << 4; // determined during an interrupt service sequence whether or not the inter­rupt was caused by BRK command or by a real interrupt.
 const FLAG_V: u8 = 0x01 << 6;
 const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulting value in all data movement and data arithmetic.
 
-// {
+// pub struct Decoder {
+//     bus: &'a mut system::Bus,
+//     cpu: &'a mut Cpu,
+// }
+// impl struct Decoder {
+//     fn BRK() {}
+
+//     fn execute() {
+
+//     }
+// }
     // #![allow(non_snake_case)] // error: an inner attribute is not permitted in this context
     fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 00 */{}
     fn ORAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -55,7 +65,13 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn ORAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
 
-    fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 10 */{}
+    fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 10 */{
+        cpu.pc +=2;
+        if (cpu.flags & FLAG_N) == 0 {
+            let offset: i8 = bus.read((cpu.pc - 1).into()).cast_signed() as i8;
+            cpu.pc = cpu.pc.wrapping_add_signed(offset as i16); // rel is signed....
+        }
+    }
     fn ORAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ORAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn ASLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -143,19 +159,27 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn TYA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn STAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn TXS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn STAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-
+    fn STAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+        let addr: usize = 
+            ((bus.read((cpu.pc + 1) as usize) as usize) | 
+            ((bus.read((cpu.pc + 2) as usize) as usize) << 8)) +
+            cpu.x as usize;
+        bus.write(addr, cpu.a);
+        cpu.pc += 3;
+    }
     fn LDYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* A0 */ {}
     fn LDAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
         cpu.x = bus.read((cpu.pc +1) as usize);
-        cpu.pc += 2;
         if cpu.x == 0 {
         cpu.flags |= FLAG_Z;
         }
-        if cpu.x & 0x80 != 0 {
+        if cpu.x >= 0x80 {
             cpu.flags |= FLAG_N;
+        } else {
+            cpu.flags &= !FLAG_N;
         }
+        cpu.pc += 2;
     }
     fn LDYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn LDAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -177,28 +201,67 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn TSX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn LDYabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn LDAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xBD
-        let addrl: usize = bus.read((cpu.pc + 1)  as usize) as usize;
-        let addrh: usize = (bus.read((cpu.pc + 2) as usize) as usize) << 8;
-        let addr: usize = addrh + addrl + (cpu.x  as usize);
+        let addr: usize = 
+            ((bus.read((cpu.pc + 1) as usize)as usize) | 
+            ((bus.read((cpu.pc + 2) as usize) as usize) << 8)) +
+            cpu.x as usize;
         cpu.a = bus.read(addr);
         if cpu.a == 0 {
         cpu.flags |= FLAG_Z;
+        } else {
+            cpu.flags &= !FLAG_Z;
         }
-
-        if cpu.a & 0x80 != 0 {
+        if cpu.a >= 0x80 {
             cpu.flags |= FLAG_N;
+        } else {
+            cpu.flags &= !FLAG_N;
         }
+        cpu.pc += 3;
     }
     fn LDXabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
 
-    fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {}
+    fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {
+        // Flags: N, Z, C
+        let mem = bus.read((cpu.pc + 1) as usize) as i8;
+        let reg = cpu.y as i8;
+        let res: u8 = cpu.y - bus.read((cpu.pc + 1) as usize) as u8;
+        if reg >= mem {
+            cpu.flags |= FLAG_C;
+        } else {
+            cpu.flags &= !FLAG_C;
+        }
+        if res == 0 {
+            cpu.flags |= FLAG_Z;
+        } else {
+            cpu.flags &= !FLAG_Z;
+        }
+        if res >= 0x80 {
+            cpu.flags |= FLAG_N;
+        } else {
+            cpu.flags &= !FLAG_N;
+        }
+        cpu.pc += 2;
+    }
     fn CMPindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn CPYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn CMPzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn DECzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn INY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn CMPimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-    fn DEX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+    fn DEX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+        cpu.x = cpu.x.wrapping_sub(1);
+        if cpu.x == 0 {
+            cpu.flags |= FLAG_Z;
+        } else {
+            cpu.flags &= !FLAG_Z;
+        }
+         if cpu.x >= 0x80 {
+            cpu.flags |= FLAG_N;
+        } else {
+            cpu.flags &= !FLAG_N;
+        }
+        cpu.pc += 1;
+    }
     fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
     fn DECabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
@@ -236,7 +299,6 @@ const FLAG_N: u8 = 0x01 << 7; // the N flag is set equal to bit 7 of the resulti
     fn ILLEGAL<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
         panic!("Illegal opcode");
     }
-// }
 #[warn(non_snake_case)]
 
 /* Todo: Remove this fossil will double indirection to save memory (Cycles more critical than memory)
@@ -289,7 +351,7 @@ pub struct Cpu {
     pub a: u8,
     pub x: u8,
     pub y: u8,
-    pub sp: u8,
+    pub sp: u16,
     pub pc: u16,
     pub flags: u8, // Negative, Zero, Carry, Interupt disable, Decimal, oVerflow
     // bus: &'a mut system::Bus, // A Cpu contains a mutable reference to a Bus, and that reference lives for lifetime 'a.
@@ -319,7 +381,8 @@ impl Cpu {
 }
 
 pub fn decode<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { //}, opcode: u8) {
-    let opcode = bus.read(cpu.pc as usize);
+    let opcode = bus.read(cpu.pc as usize) as u8;
+    println!("PC: {:04X} OP: {:02X}", cpu.pc, opcode);
     // OP_CODE[INDEX[opcode as usize]](bus, cpu);
     OP_CODE[opcode as usize](bus, cpu);
 }
@@ -339,14 +402,33 @@ mod tests {
         assert_eq!(bus.read(cpu.pc as usize), 0xBD);
         assert_eq!(cpu.x, 0x17);
 
-        let addrl: usize = bus.read((cpu.pc + 1)  as usize) as usize;
-        let addrh: usize = (bus.read((cpu.pc + 2) as usize) as usize) << 8;
-        let addr: usize = addrh + addrl + (cpu.x  as usize);
+        let addrl: u16 = bus.read((cpu.pc + 1)  as usize) as u16;
+        let addrh: u16 = (bus.read((cpu.pc + 2) as usize) as u16) << 8;
+        let addr: u16 = addrh + addrl + (cpu.x  as u16);
 
         assert_eq!(addr, 0xff9a + 0x17); 
         decode(&mut bus, &mut cpu); // LDA 0xff9a, X
         assert_eq!(cpu.a, 0xC2); // (0xff9a + 0x17) = 0xC2
 
+        decode(&mut bus, &mut cpu); // STA 0x204,X
+    }
+    #[test]
+    fn vector_table() {
+        // FF9A                                00 A0 EF F8 52 FE
+        // FFA0  94 FE 6E F9 E5 FA AC C2 AC C2 EE FB 7C FC 38 FC
+        // FFB0  78 C2 
+        let mut bus = system::Bus::new();
+        let mut cpu = Cpu::new();
+        decode(&mut bus, &mut cpu);
+        for i in 0..0x18 {
+            decode(&mut bus, &mut cpu);
+            decode(&mut bus, &mut cpu);
+            decode(&mut bus, &mut cpu);
+            decode(&mut bus, &mut cpu);
+        }
+        for i in 0..0x18 {
+            assert_eq!(bus.read((0x204 + i) as usize), bus.read((0xFF9A + i) as usize));
+        }
     }
     #[test]
     fn arithmetics() {

@@ -8,10 +8,9 @@ fn main() {
     // }
     let mut bus = system::Bus::new();
     let mut cpu = cpu6502::Cpu::new();
-    for _i in 0..2 {
-        println!("{:04X}: {:02X}", cpu.pc, bus.read(cpu.pc as usize));
+    for _i in 0..260 {
         cpu6502::decode(&mut bus, &mut cpu);
-    }
+    } // PC now 0xFF5B
 
-    println!("Acc: {:02X}, X: {:02X}, Y: {:02X}", cpu.a, cpu.x, cpu.y);
+    println!("PC {:04X} Acc: {:02X}, X: {:02X}, Y: {:02X}", cpu.pc, cpu.a, cpu.x, cpu.y);
 }

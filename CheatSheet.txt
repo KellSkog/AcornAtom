@@ -74,13 +74,29 @@ cargo build --target <the target arch>
 Installed targets can be queried with:
 $ rustup target list --installed
 
+Ownership:
+    Each value in Rust has an owner.
+    There can only be one owner at a time.
+    When the owner goes out of scope, the value will be dropped.
+The memory is automatically returned once the variable that owns it goes out of scope.
+When a variable goes out of scope, Rust calls a special function 'drop' for us.
+Passing a variable to a function will move or copy.
+
+Ampersands represent references, and they allow you to refer to some value without taking ownership of it.
+The actual reference type is written on the right side of the colon (: &T).
+
+The &s1 syntax lets us create a reference that refers to the value of s1 but does not own it. Because the reference does not own it, the value it points to will not be dropped when the reference stops being used.
+Likewise, the signature of the function uses & to indicate that the type of the parameter s is a reference.
+
+Mutable references have one big restriction: If you have a mutable reference to a value, you can have no other references to that value.
+We also cannot have a mutable reference while we have an immutable one to the same value.
+
 Testing:
 At its simplest, a test in Rust is a function that’s annotated with the test attribute. Attributes are metadata about pieces of Rust code.
 To change a function into a test function, add #[test] on the line before fn.
 
 The convention is to create a module named tests in each file to contain the test functions and to annotate the module with cfg(test).
-the attribute cfg stands
-for configuration and tells Rust that the following item should only be included given a certain configuration option (test).
+the attribute cfg stands for configuration and tells Rust that the following item should only be included given a certain configuration option (test).
 
 This within a source file:
 #[cfg(test)] // means: "Only include this code when building test targets."

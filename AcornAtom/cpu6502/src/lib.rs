@@ -59,15 +59,15 @@ fn get_NZ_flags(value: u8, mut flags: u8) -> u8 {
     flags
 }
 // #![allow(non_snake_case)] // error: an inner attribute is not permitted in this context
-fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 00 */{}
-fn ORAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ASLzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn PHP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ASLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ASLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 00 */{panic!("UIOp");}
+fn ORAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ASLzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn PHP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ASLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ASLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
 fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 10 */{
     cpu.pc +=2;
@@ -76,100 +76,154 @@ fn BPLrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 10 */{
         cpu.pc = cpu.pc.wrapping_add_signed(offset as i16); // rel is signed....
     }
 }
-fn ORAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ASLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CLC<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ORAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ASLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn ORAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ASLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CLC<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ORAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ASLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn JSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 20 */{}
-fn ANDindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn BITzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ROLzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn PLP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ROLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn BITABS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ROLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn JSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 20 */{
+    /*
+    JSR instruction stores the program counter address which points to the last byte of the 
+    jump instruc­tion onto the stack using the stack pointer.
+    The stack byte contains the program count high first, followed by program count low.
+    The JSR then transfers the addresses following the jump instruction to the program
+    counter low and the program counter high, thereby directing the program to begin at that new address.
+    The JSR instruction affects no flags, causes the stack pointer to be decremented by 2 
+    and substitutes new values into the program counter low and the program counter high.
+    The addressing mode for the JSR is always Absolute. */
+    // Get jmp target
+    cpu.pc += 1;
+    let adrl = bus.read(cpu.pc as usize) as u16;
+    cpu.pc += 1; // Now points to last byte of JSR instruction!
+    let adrh = bus.read(cpu.pc as usize) as u16;
+    // Push PC, last byte of the JSR instruc­tion
+    bus.write(cpu.sp as usize, (cpu.pc >> 8) as u8);
+    cpu.sp -= 1;
+    bus.write(cpu.sp as usize, (cpu.pc & 0xFF) as u8);
+    cpu.sp -= 1;
+    // Update PC
+    cpu.pc = adrh << 8 | adrl;
+    // The JSR instruction affects no flags
+}
+fn ANDindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn BITzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ROLzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn PLP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ROLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn BITABS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ROLabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BMIrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 30 */{}
-fn ANDindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ROLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SEC<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ANDabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ROLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BMIrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 30 */{
+    cpu.pc +=2;
+    if (cpu.flags & FLAG_N) == FLAG_N {
+        let offset: i8 = bus.read((cpu.pc - 1).into()).cast_signed() as i8;
+        cpu.pc = cpu.pc.wrapping_add_signed(offset as i16); // rel is signed....
+    }
+}
+fn ANDindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ROLzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SEC<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ANDabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ROLabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn RTI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 40 */{}
-fn EORindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LSRzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn PHA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LSRA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn JMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn RTI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 40 */{panic!("UIOp");}
+fn EORindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn EORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LSRzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn PHA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    bus.write(cpu.sp as usize, cpu.a);
+    cpu.sp -= 1;
+    cpu.pc += 1;
+}
+fn EORimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LSRA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn JMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn EORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LSRabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BVCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 50 */ {}
-fn EORindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LSRzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CLI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn EORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LSRabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BVCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 50 */ {panic!("UIOp");}
+fn EORindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn EORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LSRzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CLI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn EORabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn EORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LSRabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn RTS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 60 */ {}
-fn ADCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn RORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn PLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn RORA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn JMPind<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn RORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn RTS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 60 */ {panic!("UIOp");}
+fn ADCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ADCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn RORzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn PLA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    cpu.a = bus.read(cpu.sp as usize);
+    cpu.flags = get_NZ_flags(cpu.a, cpu.flags);
+    cpu.sp += 1;
+    cpu.pc += 1;
+}
+fn ADCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn RORA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn JMPind<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    let ial = bus.read((cpu.pc + 1) as usize) as u16;
+    let iah = bus.read((cpu.pc + 2) as usize) as u16;
+    let adl = bus.read(((iah << 8) | ial) as usize) as u16;
+    let adh = bus.read(((iah << 8) | ial + 1) as usize) as u16;
+    cpu.pc = (adh << 8) | adl;
+}
+fn ADCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn RORabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BVSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 70 */ {}
-fn ADCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn RORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SEI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn ADCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn RORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BVSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 70 */ {panic!("UIOp");}
+fn ADCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ADCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn RORzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SEI<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ADCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn ADCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn RORabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn STAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 81 */ {}
-fn STYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn STAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 81 */ {panic!("UIOp");}
+fn STYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    let addr: usize = bus.read((cpu.pc + 1) as usize) as usize;
+    bus.write(addr, cpu.a);
+    cpu.pc += 2;
+}
 fn STXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     let addr: usize = bus.read((cpu.pc + 1) as usize) as usize;
     bus.write(addr, cpu.x);
     cpu.pc += 2;
 }
-fn DEY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn DEY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 fn TXA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.a = cpu.x;
     cpu.flags = get_NZ_flags(cpu.a, cpu.flags);
     cpu.pc += 1;
 }
-fn STYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn STYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 8D
+    let addr: usize = 
+        bus.read((cpu.pc + 1) as usize) as usize |
+        (bus.read((cpu.pc + 2) as usize) as usize) << 8;
+    bus.write(addr, cpu.a);
+    cpu.pc += 3;
+}
+fn STXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BCCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 90 */ {}
-fn STAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn TYA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn STAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BCCrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 90 */ {panic!("UIOp");}
+fn STAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn TYA<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn STAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 fn TXS<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.sp = 0x100 | cpu.x as u16;
     cpu.pc += 1;
@@ -182,32 +236,50 @@ fn STAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     bus.write(addr, cpu.a);
     cpu.pc += 3;
 }
-fn LDYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* A0 */ {}
-fn LDAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn LDYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* A0 */ {
+    cpu.y = bus.read((cpu.pc +1) as usize);
+    cpu.flags = get_NZ_flags(cpu.y, cpu.flags);
+    cpu.pc += 2;
+}
+fn LDAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 fn LDXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.x = bus.read((cpu.pc +1) as usize);
     cpu.flags = get_NZ_flags(cpu.x, cpu.flags);
     cpu.pc += 2;
 }
-fn LDYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn TAY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDAimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn TAX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn LDYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDAzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn TAY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDAimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    cpu.a =bus.read((cpu.pc +1) as usize);
+    cpu.flags = get_NZ_flags(cpu.x, cpu.flags);
+    cpu.pc += 2;
+}
+fn TAX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDAabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BCSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* B0 */ {}
-fn LDAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CLV<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn TSX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn LDYabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BCSrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* B0 */ {panic!("UIOp");}
+fn LDAindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    /*  INDIRECT INDEXED ADDRESSING
+        adrl = (PC + 1) e.g zpg (#E8) = A0
+        adrh = ((PC + 1) + 1) e.g. zpg (#E9) = FE
+        addr = adrl +adrh << 8 + Y => FEA0 + Y */
+    let adrl = bus.read((cpu.pc + 1) as usize)as usize;
+    let adrh = bus.read((adrl + 1) as usize)as usize;
+    cpu.a = bus.read((adrh << 8) | adrl + cpu.y as usize);
+    cpu.flags = get_NZ_flags(cpu.a, cpu.flags);
+    cpu.pc += 2;
+}
+fn LDYzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDAzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDXzpgY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CLV<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDAabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn TSX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn LDYabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 fn LDAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xBD
     let addr: usize = 
         ((bus.read((cpu.pc + 1) as usize)as usize) | 
@@ -217,7 +289,7 @@ fn LDAabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { // 0xBD
     cpu.flags = get_NZ_flags(cpu.a, cpu.flags);
     cpu.pc += 3;
 }
-fn LDXabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn LDXabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
 fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {
     // Flags: N, Z, C
@@ -232,54 +304,66 @@ fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {
     cpu.flags = get_NZ_flags(res, cpu.flags);
     cpu.pc += 2;
 }
-fn CMPindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CPYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn DECzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn INY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn CMPindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CPYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn DECzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn INY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 fn DEX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.x = cpu.x.wrapping_sub(1);
     cpu.flags = get_NZ_flags(cpu.x, cpu.flags);
     cpu.pc += 1;
 }
-fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn DECabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn DECabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BNErel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* D0 */ {}
-fn CMPindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn DECzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CLD<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CMPabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn DECabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BNErel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* D0 */ {
+    cpu.pc += 2;
+    if (cpu.flags & FLAG_Z) == 0 {
+        let offset: i8 = bus.read((cpu.pc - 1) as usize).cast_signed() as i8;
+        cpu.pc = cpu.pc.wrapping_add_signed(offset as i16); // rel is signed....
+    }
+}
+fn CMPindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn DECzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CLD<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CMPabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn DECabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn CPXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* E0 */ {}
-fn SBCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CPXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SBCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn INCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn CPXimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* E0 */ {panic!("UIOp");}
+fn SBCindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CPXzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SBCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn INCzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    let zpg = (cpu.pc + 1) as usize;
+    let data = bus.read(zpg) + 1;
+    cpu.flags = get_NZ_flags(data, cpu.flags);
+    bus.write(zpg, data);
+    cpu.pc += 2;
+}
 fn INX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.x = cpu.x.wrapping_add(1);
     cpu.flags = get_NZ_flags(cpu.x, cpu.flags);
     cpu.pc += 1;
 }
-fn SBCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn NOP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn CPXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SBCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn INCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn SBCimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn NOP<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn CPXabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SBCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn INCabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
-fn BEQrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* F0 */ {}
-fn SBCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SBCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn INCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SED<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SBCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn SBCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
-fn INCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {}
+fn BEQrel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* F0 */ {panic!("UIOp");}
+fn SBCindY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SBCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn INCzpgX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SED<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SBCabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn SBCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
+fn INCabsX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {panic!("UIOp");}
 
 fn ILLEGAL<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     panic!("Illegal opcode");
@@ -378,57 +462,33 @@ mod tests {
     use super::*;
     
     #[test]
-    fn it_works() {
-        let mut bus = system::Bus::new();
-        let mut cpu = Cpu::new();
-        assert_eq!(bus.read(cpu.pc as usize), 0xA2);
-        decode(&mut bus, &mut cpu); // LDX @0x17
-        assert_eq!(cpu.pc, 0xFF41);
-        assert_eq!(bus.read(cpu.pc as usize), 0xBD);
-        assert_eq!(cpu.x, 0x17);
-
-        let addrl: u16 = bus.read((cpu.pc + 1)  as usize) as u16;
-        let addrh: u16 = (bus.read((cpu.pc + 2) as usize) as u16) << 8;
-        let addr: u16 = addrh + addrl + (cpu.x  as u16);
-
-        assert_eq!(addr, 0xff9a + 0x17); 
-        decode(&mut bus, &mut cpu); // LDA 0xff9a, X
-        assert_eq!(cpu.a, 0xC2); // (0xff9a + 0x17) = 0xC2
-
-        decode(&mut bus, &mut cpu); // STA 0x204,X
-    }
-    #[test]
     fn reset() {
         // FF9A                                00 A0 EF F8 52 FE
         // FFA0  94 FE 6E F9 E5 FA AC C2 AC C2 EE FB 7C FC 38 FC
         // FFB0  78 C2 
         let mut bus = system::Bus::new();
         let mut cpu = Cpu::new();
-        decode(&mut bus, &mut cpu);
-        for i in 0..0x18 {
-            decode(&mut bus, &mut cpu);
-            decode(&mut bus, &mut cpu);
-            decode(&mut bus, &mut cpu);
+        for _i in 0..0x68 {
             decode(&mut bus, &mut cpu);
         }
-        for i in 0..0x18 {
-            assert_eq!(bus.read((0x204 + i) as usize), bus.read((0xFF9A + i) as usize));
+        assert_eq!(cpu.sp, 0x1FF);
+        assert_eq!(cpu.pc, 0xFF55);
+        for _i in 0x68..266 {
+            decode(&mut bus, &mut cpu);
         }
-        decode(&mut bus, &mut cpu);
-        decode(&mut bus, &mut cpu);
-        decode(&mut bus, &mut cpu);
-        decode(&mut bus, &mut cpu);
-        decode(&mut bus, &mut cpu);
-        decode(&mut bus, &mut cpu);
-        assert_eq!(cpu.pc, 0xFF53);
+        assert_eq!(cpu.pc, 0xFF69); // FF69  20 D1 F7  JSR #F7D1
+        assert_eq!(cpu.sp, 0x1FF);
 
-        decode(&mut bus, &mut cpu);
-        for i in 0..0x34 { // set all 26 array addresses
-            decode(&mut bus, &mut cpu);
-            decode(&mut bus, &mut cpu);
+        for _i in 266..271 { // sp -=2, +=2
             decode(&mut bus, &mut cpu);
         }
-        assert_eq!(cpu.pc, 0xFF5B);
+        assert_eq!(cpu.pc, 0xF7D7);
+        assert_eq!(cpu.sp, 0x1FF);
+
+        for _i in 271..276 { // sp -=2, +=2
+            decode(&mut bus, &mut cpu);
+        }
+        assert_eq!(cpu.pc, 0xF7E1);
     }
     #[test]
     fn arithmetics() {

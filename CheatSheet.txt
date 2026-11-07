@@ -91,6 +91,11 @@ Likewise, the signature of the function uses & to indicate that the type of the 
 Mutable references have one big restriction: If you have a mutable reference to a value, you can have no other references to that value.
 We also cannot have a mutable reference while we have an immutable one to the same value.
 
+Lifetime:
+Liftime parameter: <'a> doesn't create lifetimes; it describes relationships between borrowed references so the compiler can prove they're safe.
+<T>   // generic over types
+<'a>  // generic over lifetimes
+
 Testing:
 At its simplest, a test in Rust is a function that’s annotated with the test attribute. Attributes are metadata about pieces of Rust code.
 To change a function into a test function, add #[test] on the line before fn.

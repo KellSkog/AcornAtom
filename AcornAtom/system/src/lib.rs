@@ -2,6 +2,25 @@ const BASIC_ROM: &[u8; 4096] = include_bytes!("../Atom_Basic.rom"); // 0xC000
 const FP_ROM: &[u8; 4096] = include_bytes!("../Atom_FloatingPoint.rom"); // 0xD000
 const COS_ROM: &[u8; 4096] = include_bytes!("../Atom_Kernel.rom"); // 0xF000
 
+/* VIA:
+Register: Address: Name:
+Data Register B              #B800  DB
+Data Register A              #B801  DA
+Data Direction Register B    #B802  DDRB
+Data Direction Register A    #B803  DDRA
+Timer 1 low counter, latch   #B804  T1CL
+Timer 1 high counter         #B805  T1CH
+Timer 1 low latch            #B806  T1LL
+Timer 1 high latch           #B807  T1LH
+Timer 2 low counter, latch   #B808  T2CL
+Timer 2 high counter         #B809  T2CH
+Shift Register               #B80A  SR
+Auxiliary Control Register   #B80B  ACR
+Peripheral Control Register  #B80C  PCR
+Interrupt Flag Register      #B80D  IFR
+Interrupt Enable Register    #B80E  IER
+Data Register A              #B80F  DA
+*/
 struct Ram {
     ram: [u8; 0x10000]
 }

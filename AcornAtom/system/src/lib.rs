@@ -21,8 +21,8 @@ Interrupt Flag Register      #B80D  IFR
 Interrupt Enable Register    #B80E  IER
 Data Register A              #B80F  DA
 */
-struct Ram {
-    ram: [u8; 0x10000]
+pub struct Ram {
+    pub ram: [u8; 0x10000]
 }
 impl Ram {
     pub fn read(&self, index: usize) -> u8 {
@@ -33,8 +33,8 @@ impl Ram {
     }
 }
 
-struct Vdg6847 {
-    reg: [u8;0x100]
+pub struct Vdg6847 {
+    pub reg: [u8;0x100]
 }
 impl Vdg6847 {
     pub fn read(&self, index: usize) -> u8 {
@@ -45,21 +45,42 @@ impl Vdg6847 {
     }
 }
 
-pub struct Bus {
-    ram: Ram,
-    vdg: Vdg6847,
+pub struct Via6522 {
+    pub reg: [u8;0x100]
 }
-impl Bus {
-    pub fn new() -> Self {
-        Self {
-            ram: Ram {
-                ram: [0; 0x10000],
-            },
-            vdg: Vdg6847 {
-                reg: [0; 0x100],
-            },
-        }
+impl Via6522 {
+    pub fn read(&self, index: usize) -> u8 {
+        return self.reg[index];
     }
+    pub fn write(&mut self, index: usize, data: u8) {
+        self.reg[index] = data;
+    }
+}
+
+pub struct Bus<'a> { 
+    /* implicit elided lifetime not allowed here
+    A Bus contains a reference to a Ram etc., and those references must remain valid for some lifetime we'll call 'a.
+    The Bus cannot live longer than the Ram it references. */
+    ram: &'a mut Ram,
+    vdg: &'a mut Vdg6847,
+    via: &'a mut Via6522,
+}
+impl<'a> Bus<'a> {
+    pub fn new(ram: &'a mut Ram, vdg: &'a mut Vdg6847, via: &'a mut Via6522) -> Self {
+        Self { ram, vdg, via }
+    }
+        // Bus {
+        //     ram: &Ram {
+        //         ram: [0; 0x10000],
+        //     },
+        //     vdg: &Vdg6847 {
+        //         reg: [0; 0x100],
+        //     },
+        //     via: &Via6522 {
+        //         reg: [0; 0x100],
+        //     },
+        // }
+    // }
     pub fn read(&self, adr: usize) -> u8 {
         match adr {
             0x0800..0x0900 => self.vdg.read(adr - 0x0800),
@@ -80,73 +101,24 @@ impl Bus {
     }
 }
 
-// static ppu8255 = Ppu8255 {
-//     reg: [u8;0xFF]
-// };
-// impl Ppu8255 {
-//     pub fn read(&self, index: usize) -> u8 {
-//         return self.reg[index];
-//     }
-//     pub fn write(&self, index: usize, data: u8) {
-//         self.reg[index] = data;
-//     }
-// }
-// // static ppu8255 = Ppu8255;
-
-// static Via6522 = Via6522 {
-//     reg: [u8;0xFF]
-// };
-// impl Via6522 {
-//     pub fn read(&self, index: usize) -> u8 {
-//         return self.reg[index];
-//     }
-//     pub fn write(&self, index: usize, data: u8) {
-//         self.reg[index] = data;
-//     }
-// }
-// static Via6522 = via6522;
-
-// pub fn read(bus: Bus, adr: usize) -> u8 {
-//     unsafe {
-//     return match adr {
-//         0x0000..0x0800 => bus.ram.read(adr), // Zero page, Teletext VDU RAM
-//         0x0800..0x0900 => bus.vdg6847.read(adr),
-//         0x2800..0x3C00 => bus.ram.read(adr), // Ram expansion
-//         0x8000..0x9800 => bus.ram.read(adr), // Graphics RAM
-//         // 0xB000..0xB800 => ppu8255.read(adr),
-//         // 0xB800..0xC000 => via6522.read(adr),
-//         0xC000..0xD000 => BASIC_ROM[adr - 0xC000],
-//         0xF000..0x10000 => COS_ROM[adr - 0xF000],
-//         _ => 0xFF,
-//     }
-// }
-// }
-// pub fn write(adr: usize, data: u8) {
-//     unsafe {
-//     match adr {
-//         0x0000..0x0800 => ram.write(adr, data), // Zero page, Teletext VDU RAM
-//         0x0800..0x0900 => vdg6847.write(adr, data),
-//         0x2800..0x3C00 => ram.write(adr, data), // Ram expansion
-//         0x8000..0x9800 => ram.write(adr, data), // Graphics RAM
-//         // 0xB000..0xB800 => ppu8255.write(adr, data),
-//         // 0xB800..0xC000 => via6522.write(adr, data),
-//         _ => {},
-//     }
-// }
-// }
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn basic_rom() {
-        let bus = Bus::new();
+        let mut ram = Ram{ram: [0u8; 0x10000]};
+        let mut vdg = Vdg6847{reg :[0u8; 0x100]};
+        let mut via = Via6522{reg :[0u8; 0x100]};
+        let mut bus = Bus::new(&mut ram, &mut vdg, &mut via);
         assert_eq!(bus.read(0xF000), 0x50);
     }
     #[test]
     fn vdg() {
-        let mut bus = Bus::new();
+        let mut ram = Ram{ram: [0u8; 0x10000]};
+        let mut vdg = Vdg6847{reg :[0u8; 0x100]};
+        let mut via = Via6522{reg :[0u8; 0x100]};
+        let mut bus = Bus::new(&mut ram, &mut vdg, &mut via);
         assert_eq!(bus.read(0xF000), 0x50);
         bus.write(0x800, 0x42);
         assert_eq!(bus.read(0x800), 0x42);

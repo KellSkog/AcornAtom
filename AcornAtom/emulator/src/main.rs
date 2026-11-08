@@ -6,7 +6,10 @@ fn main() {
     //     bus: system::Bus::new(),
     //     cpu: cpu6502::Cpu::new(),
     // }
-    let mut bus = system::Bus::new();
+    let mut ram = system::Ram{ram: [0u8; 0x10000]};
+    let mut vdg = system::Vdg6847{reg :[0u8; 0x100]};
+    let mut via = system::Via6522{reg :[0u8; 0x100]};
+    let mut bus = system::Bus::new(&mut ram, &mut vdg, &mut via);
     let mut cpu = cpu6502::Cpu::new();
     for _i in 0..260 {
         cpu6502::decode(&mut bus, &mut cpu);

@@ -62,6 +62,17 @@ fn unimplemented<'a>(bus: &'a system::Bus, cpu: &'a Cpu) {
     println!("PC: {:04X}, Acc: {:02X}, SP: {:04X}, X: {:02X}, Y: {:02X}", cpu.pc, cpu.a, cpu.sp, cpu.x, cpu.y);
     panic!("UIOp: {:02X}", bus.read(cpu.pc as usize));
 }
+fn CMP_helper<'a>(reg: u8, mem: u8, cpu: &'a mut Cpu) {
+    let res = cpu.a.wrapping_sub(mem);
+
+    if reg >= mem { // the carry flag is set when the value in memory is less than or equal to the accumulator
+        cpu.flags |= FLAG_C;
+    } else {
+        cpu.flags &= !FLAG_C;
+    }
+    cpu.flags = get_NZ_flags(res, cpu.flags);
+    cpu.pc += 2;
+}
 // #![allow(non_snake_case)] // error: an inner attribute is not permitted in this context
 fn BRK<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* 00 */{unimplemented(&bus, &cpu);}
 fn ORAindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
@@ -309,29 +320,14 @@ fn LDXabsY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, 
 fn CPYimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* C0 */ {
     // Flags: N, Z, C
     let mem = bus.read((cpu.pc + 1) as usize);
-    let res = cpu.y.wrapping_sub(mem);
-    if cpu.y >= mem {
-        cpu.flags |= FLAG_C;
-    } else {
-        cpu.flags &= !FLAG_C;
-    }
-    cpu.flags = get_NZ_flags(res, cpu.flags);
-    cpu.pc += 2;
+    CMP_helper(cpu.y, mem, cpu);
 }
 fn CMPindX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
 fn CPYzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
 fn CMPzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     let adr: usize = bus.read((cpu.pc + 1) as usize) as usize;
     let mem = bus.read(adr);
-    let res = cpu.a.wrapping_sub(mem);
-
-    if cpu.a >= mem { // the carry flag is set when the value in memory is less than or equal to the accumulator
-        cpu.flags |= FLAG_C;
-    } else {
-        cpu.flags &= !FLAG_C;
-    }
-    cpu.flags = get_NZ_flags(res, cpu.flags);
-    cpu.pc += 2;
+    CMP_helper(cpu.a, mem, cpu);
 }
 fn DECzpg<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
 fn INY<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
@@ -339,23 +335,27 @@ fn CMPimm<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     /* This instruction subtracts the contents of memory from the contents of the accumulator. 
     Flags: N, Z, C */
     let mem = bus.read((cpu.pc + 1) as usize);
-    let res = cpu.a.wrapping_sub(mem);
-
-    if cpu.a >= mem { // the carry flag is set when the value in memory is less than or equal to the accumulator
-        cpu.flags |= FLAG_C;
-    } else {
-        cpu.flags &= !FLAG_C;
-    }
-    cpu.flags = get_NZ_flags(res, cpu.flags);
-    cpu.pc += 2;
+    CMP_helper(cpu.a, mem, cpu);
 }
 fn DEX<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
     cpu.x = cpu.x.wrapping_sub(1);
     cpu.flags = get_NZ_flags(cpu.x, cpu.flags);
     cpu.pc += 1;
 }
-fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
-fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
+fn CPYabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    let adr: usize = 
+        bus.read((cpu.pc + 1) as usize) as usize | 
+        (bus.read((cpu.pc + 2) as usize) as usize) << 8;
+    let mem = bus.read(adr);
+    CMP_helper(cpu.y, mem, cpu);
+}
+fn CMPabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {
+    let adr: usize = 
+        bus.read((cpu.pc + 1) as usize) as usize | 
+        (bus.read((cpu.pc + 2) as usize) as usize) << 8;
+    let mem = bus.read(adr);
+    CMP_helper(cpu.a, mem, cpu);
+}
 fn DECabs<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) {unimplemented(&bus, &cpu);}
 
 fn BNErel<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) /* D0 */ {
@@ -511,7 +511,10 @@ mod tests {
         // FF9A                                00 A0 EF F8 52 FE
         // FFA0  94 FE 6E F9 E5 FA AC C2 AC C2 EE FB 7C FC 38 FC
         // FFB0  78 C2 
-        let mut bus = system::Bus::new();
+        let mut ram = system::Ram{ram: [0u8; 0x10000]};
+        let mut vdg = system::Vdg6847{reg :[0u8; 0x100]};
+        let mut via = system::Via6522{reg :[0u8; 0x100]};
+        let mut bus = system::Bus::new(&mut ram, &mut vdg, &mut via);
         let mut cpu = Cpu::new();
         for _i in 0..0x68 {
             decode(&mut bus, &mut cpu);

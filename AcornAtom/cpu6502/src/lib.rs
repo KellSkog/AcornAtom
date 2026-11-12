@@ -505,7 +505,7 @@ pub fn decode<'a>(bus: &'a mut system::Bus, cpu: &'a mut Cpu) { //}, opcode: u8)
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn reset() {
         // FF9A                                00 A0 EF F8 52 FE

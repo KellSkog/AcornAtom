@@ -21,6 +21,32 @@ Interrupt Flag Register      #B80D  IFR
 Interrupt Enable Register    #B80E  IER
 Data Register A              #B80F  DA
 */
+/* PIA
+The 8255 Programmable Peripheral Interface Adapter contains three
+8-bit ports, and all but one of these lines is used by the ATOM.
+Port A - #B000
+    Output bits: Function:
+    0 - 3 Keyboard row
+    4 - 7 Graphics mode
+Port B - #B001
+    Input bits: Function:
+    0 - 5 Keyboard column
+    6 CTRL key (low when pressed)
+    7 SHIFT keys (low when pressed)
+Port C - #B002
+    Output bits: Function:
+    0 Tape output
+    1 Enable 2.4 kHz to cassette output
+    2 Loudspeaker
+    3 Not used
+    Input bits: Function:
+    4 2.4 kHz input
+    5 Cassette input
+    6 REPT key (low when pressed)
+    7 60 Hz sync signal (low during flyback)
+The port C output lines, bits 0 to 3, may be used for user
+applications when the cassette interface is not being used.
+*/
 pub struct Ram {
     pub ram: [u8; 0x10000]
 }
